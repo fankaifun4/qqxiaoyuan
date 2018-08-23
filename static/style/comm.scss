@@ -1,0 +1,39 @@
+@import "./config";
+
+page{
+  background:#fff;
+  width:100%;
+  min-height: 100%;
+  color:$black_txt;
+  font-size:30px;
+}
+.container{
+  clear:both;
+}
+.page-inner-wrap{
+  display: flex;
+  flex-direction: column;
+}
+.sroll-wrap{
+  display: block;
+  flex:1;
+  overflow-x: hidden;
+  overflow-y:scroll;
+}
+
+.fs-b{
+  font-weight: 700;
+}
+.ts-d{
+  text-decoration:underline;
+}
+.mr-20{
+  margin-right:20px;
+}
+.pd-tb15{
+  padding-top:15px;
+  padding-bottom:15px;
+}
+.h2w__p{
+  padding:15px 0;
+}
