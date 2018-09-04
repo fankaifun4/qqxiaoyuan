@@ -21,7 +21,10 @@ export default {
       'pages/activity/publish/main',
       'pages/activity/prevAct/main',
       'pages/activity/cover/main',
-      'pages/activity/publishDetail/main'
+      'pages/activity/publishDetail/main',
+      'pages/activity/detailCover/main',
+      'pages/activity/votingCover/main',
+      'pages/activity/votingListCover/main'
     ],
     window: {
       backgroundTextStyle: 'light',

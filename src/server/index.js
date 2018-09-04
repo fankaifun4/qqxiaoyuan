@@ -6,6 +6,8 @@ export const getSchool = ({ latitude, longitude,searchName},cb) => $http('/api/s
 
 export const getActivity  = ({currentPage=1,pageSize=20,search={ type:1 } },cb)=>$http('/api/school/activity_page',{currentPage,pageSize,search}).$post(cb)
 
-export const cosSign = ({method,path},cb)=>$http('http://158zfy.oicp.net:49335/api/school/cos_sign',{method,path}).$post(cb)
+export const cosSign = ({method,path},cb)=>$http('/api/school/cos_sign',{method,path}).$post(cb)
 
+export const publisDetail = (info,cb)=>$http("/api/school/activity_create",{...info}).$post(cb)
 
+export const activityCreate = (formdata,cb)=>$http('/api/vote/activity_create',formdata).$post(cb)

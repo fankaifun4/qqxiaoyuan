@@ -5,7 +5,6 @@ const app = new Vue(App)
 app.$mount()
 export default {
   config:{
-    navigationBarTitleText:'投票活动详情',
-    enablePullDownRefresh:true
+    navigationBarTitleText:'选择图片'
   }
 }

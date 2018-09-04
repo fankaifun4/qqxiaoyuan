@@ -164,6 +164,9 @@
     background:#04b00f;
     color:#fff;
   }
+  .address-selector{
+    flex: 1;
+  }
 </style>
 <template>
 <div class="container">
@@ -186,9 +189,23 @@
       <label >活动标题</label>
       <input type="text" maxlength="20" class="form-input" placeholder="不超过20字" v-model="actTitle">
     </div>
+    <div class="form-group" >
+      <label >活动类型</label>
+      <picker mode="selector" class="time-date" value="0" :range="actTypeList" range-key="name"	  @change="bindActTypeChange">
+        <view class="picker">{{actType.name?actType.name:'请选择活动类型'}}</view>
+      </picker>
+    </div>
+    <div class="form-group" >
+      <label >参与人数</label>
+      <input type="number" maxlength="3" class="form-input" placeholder="请输入参与人数" v-model="limitMax">
+    </div>
     <div class="form-group">
       <label >主办方</label>
       <input type="text" :value="userInfo.nickName"  class="form-input" disabled>
+    </div>
+    <div class="form-group" >
+      <label >联系方式</label>
+      <input type="text" maxlength="30" class="form-input" placeholder="请输入主办方的联系方式" v-model="contactInformation">
     </div>
     <div  class="form-group">
       <label>开始时间</label>
@@ -211,7 +228,7 @@
     <div class="form-group">
       <label for="">活动地点</label>
       <picker mode="selector"  :value="index" :range="type"  range-key="name" @change="changeActivityType">
-        <div >{{address.value}}</div>
+        <div class="address-selector">{{address.value}}</div>
       </picker>
       <div class="address-name">{{address.name}}</div>
     </div>
@@ -227,9 +244,6 @@
 </template>
 <script>
 import moment from 'moment'
-import COS from '../../../../static/libs/cos-wx-sdk-v5'
-import {cosSign} from '../../../server/index'
-import uploadFile from './upload'
 
 export default {
 
@@ -254,13 +268,46 @@ export default {
           value:"xxhd"
         }
       ],
-      detail:"",
       userInfo:{},
       ctx:null,
       hasCoverImg:false,
+      //海报
       activityCover:"",
+      //活动主题
       actTitle:"",
-      schema:null
+      //活动类型
+      actType:"",
+      //联系方式
+      contactInformation:"",
+      //选择的计费策略
+      costStrategyId:0,
+      //参与人数
+      enrollment:0,
+      //最大参与人数
+      limitMax:10,
+      //表单设置
+      formSettingId:0,
+
+      actTypeList:[
+        {
+          name:"招新",
+          value:1
+        },{
+          name:"宣传",
+          value:2
+        },
+        // {
+        //   name:"投票",
+        //   value:3
+        // },
+        {
+          name:"签到",
+          value:4
+        },{
+          name:"其他",
+          value:5
+        }
+      ]
     }
   },
   mounted(){
@@ -290,6 +337,10 @@ export default {
       wx.navigateTo({
         url:"/pages/activity/cover/main"
       })
+    },
+    bindActTypeChange(e){
+      let index = e.target.value
+      this.actType = this.actTypeList[index]
     },
     bindStartDateChange(e){
       this.startDate =  e.target.value
@@ -354,22 +405,56 @@ export default {
     },
     publishActNext(){
       let info = {}
-      info.actTitle = this.actTitle
-      info.startTime = this.startDate+' '+this.startTime
-      info.endTime = this.endDate+' '+this.endTime
+      //海报
+      info.placardUrl = this.activityCover
 
+      //活动主题
+      info.theme = this.actTitle
+
+      //活动类型
+      info.type = this.actType.value
+
+      //参与人数
+      info.limitMax = this.limitMax
+
+      //联系方式
+      info.contactInformation = this.contactInformation
+
+      //开始时间
+      info.startTime = this.startDate+' '+this.startTime+':00'
+
+      //结束时间
+      info.endTime = this.endDate+' '+this.endTime+':00'
+
+      //地址
       info.address = (this.address.value=='请选择地址'?"":this.address.value) + "" + (this.address.name||"")
-      info.detail = this.detail
-      info.activityCover = this.activityCover
 
       let seartDate = this.getTime( info.startTime )
       let endDate = this.getTime( info.endTime )
       wx.setStorageSync('storageAct',info)
 
-      if( this.isEpt(info.actTitle)==''){
+      if( this.isEpt(info.theme)==''){
         wx.showToast({
           icon:"none",
-          title:"活动标题不能为空"
+          title:"活动标题不能为空",
+          mask:true
+        })
+        return
+      }
+      if(!info.type || info.type == ''){
+        wx.showToast({
+          icon:"none",
+          title:"请选择活动类型",
+          mask:true
+        })
+        return
+      }
+
+      if(this.isEpt(info.contactInformation)==''){
+        wx.showToast({
+          icon:"none",
+          title:"主办方的联系方式不能为空",
+          mask:true
         })
         return
       }
@@ -377,7 +462,8 @@ export default {
       if( seartDate> endDate)  {
         wx.showToast({
           icon:"none",
-          title:"结束时间不能小于开始时间"
+          title:"结束时间不能小于开始时间",
+          mask:true
         })
         return
       }
@@ -385,54 +471,24 @@ export default {
       if( this.isEpt(info.address)==''){
         wx.showToast({
           icon:"none",
-          title:"请选择地址"
+          title:"请选择地址",
+          mask:true
         })
         return
       }
+      if( !info.placardUrl||info.placardUrl==''){
+        wx.showToast({
+          icon:"none",
+          title:"请选择一张满意的海报哦",
+          mask:true
+        })
+        return
+      }
+      wx.setStorageSync('detailStep1',info)
       wx.navigateTo({
         url:"/pages/activity/publishDetail/main"
       })
-    },
-    prevAct(){
-      let info = {}
-      info.actTitle = this.actTitle
-      info.startTime = this.startDate+' '+this.startTime
-      info.endTime = this.endDate+' '+this.endTime
-      info.address = (this.address.value=='请选择地址'?"":this.address.value) + "" + (this.address.name||"")
-      info.detail = this.detail
-      info.activityCover = this.activityCover
-
-      let seartDate = this.getTime( info.startTime )
-      let endDate = this.getTime( info.endTime )
-
-      if( this.isEpt(info.actTitle)==''){
-        wx.showToast({
-          icon:"none",
-          title:"活动标题不能为空"
-        })
-        return
-      }
-
-      if( seartDate> endDate)  {
-        wx.showToast({
-          icon:"none",
-          title:"结束时间不能小于开始时间"
-        })
-        return
-      }
-
-      if( this.isEpt(info.address)==''){
-        wx.showToast({
-          icon:"none",
-          title:"请选择地址"
-        })
-        return
-      }
-      wx.setStorageSync('storageAct',info)
-      wx.navigateTo({
-        url:"/pages/activity/prevAct/main"
-      })
     }
-  },
+  }
 }
 </script>

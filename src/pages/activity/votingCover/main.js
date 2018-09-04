@@ -4,8 +4,4 @@ import App from './index'
 const app = new Vue(App)
 app.$mount()
 export default {
-  config:{
-    navigationBarTitleText:'投票活动详情',
-    enablePullDownRefresh:true
-  }
 }

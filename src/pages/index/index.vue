@@ -394,16 +394,6 @@
           </block>
         </div>
       </div>
-      <div class="broad">
-        <scroll-view  class="broad-inner-wrap" >
-          <div class="broad-scroll" :style="{transform:translateTop}">
-            <div v-for="(item,index) in broadList" :key="index" class="scroll-view-item bc_green">
-              <img class="icon-broad" src="/static/images/guangbo@2x.png@3x.png" alt="">
-              <div class="text">{{ item.text }}</div>
-            </div>
-          </div>
-        </scroll-view>
-      </div>
       <div class="tab-name">
         <div class="title">学生活动</div>
       </div>
@@ -529,24 +519,6 @@ export default {
           target:''
         }
       ],
-      broadList:[
-        {
-          text:"广播1广播1广播1广播1广播1广播1广播1广播1广播1广播1广播1广播1广播1",
-          target:''
-        },{
-          text:"广播2广播2广播2",
-          target:''
-        },{
-          text:"广播3广播3广播3广播3广播3广播3广播3广播3广播3广播3广播3",
-          target:''
-        },{
-          text:"广播4广播4广播4广播4广播4广播4广播4广播4广播4广播4广播4广播4广播4广播4广播4",
-          target:''
-        },{
-          text:"广播5广播5广播5广播5广播5广播5广播5广播5广播5广播5广播5广播5广播5广播5广播5",
-          target:''
-        }
-      ],
       activityList:[],
       page:1,
     }
@@ -555,6 +527,15 @@ export default {
     stars,
     schoolPicker,
     loading
+  },
+  created () {
+    // 调用应用实例的方法获取全局数据
+    this.checkLogin()
+    this.checkSchool()
+    this.getData()
+    this.qqmapwx =  new QQMapWX({
+      key:"ICYBZ-3YVKU-S52VW-BKGEF-2JOWT-N5FVQ"
+    })
   },
   methods: {
     //获取活动数据
@@ -568,7 +549,8 @@ export default {
         }
       },(er,res)=>{
         if(er) return
-        if( res.data && res.data.list.length  ){
+        console.log(res)
+        if( res.data && res.data.list  ){
           if(  res.data.list.length < 5){
             this.isLoading=false
             this.activityList = this.activityList.concat( res.data.list )
@@ -646,16 +628,6 @@ export default {
     changeBanner(e){
       let cur = e.target.current
       this.bannerActive = cur
-    },
-    //轮播公告
-    changeBroad(){
-        let max = this.broadList.length-1
-        let start= 0
-        setInterval(()=>{
-          let index = -start*40
-          this.translateTop=`translateY(${index}rpx)`
-          start=start>=max?0:start+1
-        },3000)
     },
     //首页路由
     enrollMain(model){
@@ -765,16 +737,6 @@ export default {
         url:"/pages/activity/publish/main"
       })
     }
-  },
-  created () {
-    // 调用应用实例的方法获取全局数据
-    this.changeBroad()
-    this.checkLogin()
-    this.checkSchool()
-    this.getData()
-    this.qqmapwx =  new QQMapWX({
-      key:"ICYBZ-3YVKU-S52VW-BKGEF-2JOWT-N5FVQ"
-    })
   },
   onReachBottom(){
     if(this.isLoading) return
