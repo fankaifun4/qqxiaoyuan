@@ -13,29 +13,40 @@ export default {
     // 页面前带有 ^ 符号的，会被编译成首页，其他页面可以选填，我们会自动把 webpack entry 里面的入口页面加进去
     pages: [
       '^pages/index/main',
-      'pages/activity/list/main',
-      'pages/activity/detail/main',
+      'pages/my/main',
+      'pages/actList/main',
+      'pages/mainAct/main',
+      'pages/enroll/main',
+      'pages/activity/publishVoting/main',
       'pages/activity/voting/lists/main',
       'pages/activity/voting/detail/main',
-      'pages/activity/advertise/main',
-      'pages/activity/publish/main',
-      'pages/activity/prevAct/main',
-      'pages/activity/cover/main',
-      'pages/activity/publishDetail/main',
-      'pages/activity/detailCover/main',
-      'pages/activity/votingCover/main',
-      'pages/activity/votingListCover/main'
+      'pages/updateVote/update/main'
     ],
     window: {
-      backgroundTextStyle: 'light',
-      navigationBarBackgroundColor: '#fff',
-      navigationBarTitleText: 'WeChat',
-      navigationBarTextStyle: 'black',
+      navigationBarBackgroundColor: "#000",
+      backgroundTextStyle: 'dark',
+      navigationBarTextStyle: '#fff',
       onReachBottomDistance:"50px"
     },
     networkTimeout: {
       "request": 10000,
       "downloadFile": 10000
+    },
+    tabBar: {
+      selectedColor:"#1296db",
+      backgroundColor:'#fff',
+      borderStyle:'#f0f',
+      list: [{
+        pagePath: "pages/index/main",
+        iconPath:"/static/images/home.png",
+        selectedIconPath:"/static/images/home_act.png",
+        text: "首页"
+      },{
+        pagePath:"pages/my/main",
+        iconPath:"/static/images/my.png",
+        selectedIconPath:"/static/images/my_act.png",
+        text: "我的"
+      }]
     }
   }
 }

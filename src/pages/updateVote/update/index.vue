@@ -5,22 +5,22 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-      >div{
-        width: 33.33%;
-        height: 100%;
-        text-align: center;
-        box-sizing: border-box;
-        &:first-child{
-          border-right: 1px solid #ccc;
-        }
-        &:nth-child(2){
-          border-right: 1px solid #ccc;
-        }
-        &.active{
-          background:rgb(50,135,244);
-          color:#fff;
-        }
+    >div{
+      width: 33.33%;
+      height: 100%;
+      text-align: center;
+      box-sizing: border-box;
+      &:first-child{
+        border-right: 1px solid #ccc;
       }
+      &:nth-child(2){
+        border-right: 1px solid #ccc;
+      }
+      &.active{
+        background:rgb(50,135,244);
+        color:#fff;
+      }
+    }
   }
   .setting-cont{
 
@@ -37,9 +37,22 @@
       background:#efefef url("https://i.loli.net/2018/09/03/5b8cc2658b23b.png") center no-repeat;
       background-size: 160px 160px;
     }
+    .addpic{
+      position: absolute;
+      width: 122px;
+      height: 120px;
+      margin: auto;
+      left: 0px;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      z-index: 1;
+    }
     .cover{
+      position: absolute;
       width:100%;
       height: 100%;
+      z-index: 2;
     }
   }
   .form-group{
@@ -129,7 +142,7 @@
       .detail{
         border:1px solid #ccc;
         min-height:80px;
-        padding:15px;
+        padding:4px;
         box-sizing: border-box;
         border-radius: 10px;
         color:#999;
@@ -202,9 +215,6 @@
     .super-input{
       width:100px;
     }
-  }
-  .red{
-    color:#c90915;
   }
   .copper-shape-list{
     position: fixed;
@@ -282,7 +292,7 @@
       <div class="base-info">
         <div class="avart"></div>
         <div>
-          <div class="pic_log" :class="{'no-img':!base.placardUrl}"  @click="addImagePrev" >
+          <div class="pic_log"  @click="addImagePrev" :class="{'no-img':!base.placardUrl}" >
             <img mode="aspectFill" v-if="base.placardUrl" class="cover" :src="base.placardUrl" alt="">
           </div>
           <div class="form-group" >
@@ -335,7 +345,7 @@
             <div class="itemNo">编号：{{item.itemNo}}</div>
             <div class="title">标题：<input type="text" v-model="item.title" placeholder="请填写标题"></div>
             <div class="title">初始票数：<input type="text" v-model="item.totalNumber" placeholder="初始票数"></div>
-            <div class="detail" @click="addListText(item)">{{item.describes==''?'填写介绍会增加朋友的投票热情哦':item.describes}}</div>
+            <div class="detail" @click="addListText(item)">{{item.describes==''?'填写介绍能增加朋友的投票热情哦':item.describes}}</div>
             <div class="delete" @click="deleteSetting(index)"></div>
             <div class="uper" @click="uperList(item,index)" v-if="index>0"></div>
             <div class="down" @click="downList(item,index)" v-if="index<list.length-1"></div>
@@ -385,8 +395,15 @@
           <switch color="rgb(50,135,244)" :checked="info.userCreate" @change="supportEnroll"/>
         </div>
       </div>
+
       <div class="form-group">
-        <button class="next" @click="validate">发布</button>
+        <button class="next" style="background:#c90915" @click="pause">暂停活动</button>
+      </div>
+      <div class="form-group">
+        <button class="next" style="background:orange" @click="start">开始活动</button>
+      </div>
+      <div class="form-group">
+        <button class="next" @click="validate">确定发布</button>
       </div>
     </div>
   </div>
@@ -425,7 +442,7 @@
 <script>
   import moment from 'moment'
   import detailText from '../../../components/detailText'
-  import {activityCreate} from '../../../server/index'
+  import {activityDetail,activityCreate,activityStart,activityStop} from '../../../server/index'
   import uploadFile from '../../../utils/upload'
   import MpvueCropper from 'mpvue-cropper'
   let wecropper
@@ -453,6 +470,7 @@
           }
         },
         wecropper:false,
+        listsImgID:null,
         settingSelect:1,
         //开始时间
         startDate: moment().format('YYYY-MM-DD'),
@@ -490,18 +508,6 @@
           describes:"",
           //初始票书
           totalNumber:0
-        },
-          {
-          //图片地址
-          photoUrl:"",
-          //编号
-          itemNo:102,
-          //标题
-          title:"",
-          //描述
-          describes:"",
-          //初始票书
-          totalNumber:0
         }],
         info:{
           //用户投票次数
@@ -524,9 +530,11 @@
           //编号
           itemNo:101
         },
-        sotreCode:102,
+        sotreCode:101,
         uploadImage:null,
-        listsImgID:null
+        ID:null,
+        isPause:false,
+        isPublish:true
       }
     },
     mounted(){
@@ -536,6 +544,32 @@
       this.userInfo = userInfo
     },
     methods:{
+      pause(){
+        const _this = this
+        wx.showModal({
+          content:"确定要暂停活动吗？",
+          success(res){
+            if (res.confirm) {
+              _this.isPublish = false
+              _this.isPause = true
+              _this.validate()
+            }
+          }
+        })
+      },
+      start(){
+        const _this = this
+        wx.showModal({
+          content:"确定要启动活动吗？",
+          success(res){
+            if (res.confirm) {
+              _this.isPublish = false
+              _this.isPause = false
+              _this.validate('start')
+            }
+          }
+        })
+      },
       Ept(val){
         return val.replace(/^\s+|\s+$/ig,'')
       },
@@ -687,7 +721,6 @@
           this.showToast('none','结束时间不能小于开始时间')
           return
         }
-
         if( list.length<2 ){
           this.showToast('none','最少需要2个投票项')
           return
@@ -764,6 +797,7 @@
         uploadImgList(0)
       },
       bublishJSON(){
+        const _this=this
         const base = this.base
         const item = this.list
         const info = this.info
@@ -772,26 +806,81 @@
           item,
           info
         }
-        activityCreate(formData,(er,res)=>{
-
-          if(er){
-            wx.showModal({
-              content:"发布活动出错"
-            })
-            return
-          }
-          if(res && res.data && res.data.code==200){
-            wx.showModal({
-              content:"活动发布成",
-              showCancel:false,
-              success(){
-                wx.reLaunch({
-                  url:"/pages/mainAct/main?publish=true"
+        if(!this.isPublish){
+          if( this.isPause ){
+            activityStop(_this.ID,(er,res)=>{
+              if(er){
+                wx.showToast({
+                  icon:'none',
+                  title:"请求失败，请稍后再试"
+                })
+                return
+              }
+              if(res&& res.data && res.data.code==200){
+                wx.showToast({
+                  icon:'success',
+                  title:"活动设置结束"
+                })
+                wx.redirectTo({
+                  url:"/pages/mainAct/main"
+                })
+              }else{
+                wx.showModal({
+                  content:"活动设置失败",
+                  showCancel:false
                 })
               }
             })
+          }else{
+            activityStart(_this.ID,(er,res)=>{
+              if(er){
+                wx.showToast({
+                  icon:'none',
+                  title:"请求失败，请稍后再试"
+                })
+                return
+              }
+              if(res&& res.data && res.data.code==200){
+                wx.showToast({
+                  icon:'success',
+                  title:"活动设置开始"
+                })
+                wx.redirectTo({
+                  url:"/pages/mainAct/main"
+                })
+              }else{
+                wx.showModal({
+                  content:"活动设置失败",
+                  showCancel:false
+                })
+              }
+
+            })
           }
-        })
+
+        }else{
+          activityCreate(formData,(er,res)=>{
+            if(er){
+              wx.showModal({
+                content:"发布活动出错"
+              })
+              return
+            }
+
+            if(res && res.data && res.data.code==200){
+              wx.showModal({
+                content:"活动发布成",
+                showCancel:false,
+                success:res=>{
+                  wx.redirectTo({
+                    url:"/pages/mainAct/main"
+                  })
+                }
+              })
+            }
+          })
+        }
+
       },
       getTime(time){
         let dar = time.split('-')
@@ -810,6 +899,44 @@
           mask:true
         })
       },
+      initData(){
+        activityDetail(this.ID,(er,res)=>{
+          if(er){
+            wx.showToast({
+              icon:"none",
+              title:"数据获取失败"
+            })
+            return
+          }
+          if(res.data&&res.data.data){
+            let data = res.data.data
+            this.base = data.base
+            this.list = data.item
+            this.info = data.info
+            let len = this.list.length
+
+            let startTime = this.base.startTime
+            let endTime = this.base.endTime
+            this.startDate = moment(startTime).format('YYYY-MM-DD')
+            this.startTime = moment(startTime).format('HH:mm')
+            this.endDate = moment(endTime).format('YYYY-MM-DD')
+            this.endTime = moment(endTime).format('HH:mm')
+            wx.setStorageSync('votingCover',{
+              photoUrl:this.base.placardUrl,
+              itemNo:null
+            })
+            if( this.list.length>0 ){
+              this.list.sort((a,b)=>{
+                return parseInt(a.itemNo) - parseInt(b.itemNo)
+              })
+              this.sotreCode = this.list[len-1].itemNo
+            }else{
+              this.sotreCode = 101
+            }
+          }
+        })
+      },
+      //裁剪模块生命周期开始----
       cropperReady (...args) {
         console.log('cropper ready!')
       },
@@ -854,6 +981,13 @@
       },
       closeCropper(){
         this.wecropper = false
+      }
+      //裁剪模块生命周期结束----
+    },
+    onLoad(option){
+      if(option.id){
+        this.ID=option.id
+        this.initData()
       }
     }
   }

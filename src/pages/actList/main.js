@@ -5,7 +5,7 @@ const app = new Vue(App)
 app.$mount()
 export default {
   config:{
-    navigationBarTitleText:'卿卿校园',
+    navigationBarTitleText:'我参加的活动',
     enablePullDownRefresh:true
   }
 }

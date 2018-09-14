@@ -15,27 +15,28 @@ class http {
     this.data = data
     this.token = null
   }
-  $get(callback=null,isToken=false){
-    this.$request('GET',callback,isToken)
+  $get(callback=null,isToken=true){
+    this.$request('GET',callback)
     return this
   }
   $post(callback=null,isToken=false){
-    this.$request('POST',callback,isToken)
-    return this
-  }
-  $request(method,cb ,isToken){
-    const _this=this
     const token = wx.getStorageSync('token')
+    const memberId = wx.getStorageSync('memberId')
     if( isToken ){
-      if( !token ){
-        wx.showToast({
-          icon:"none",
-          mask:true,
-          title:"账号过期，请重新登录"
+      if( !token || !memberId ){
+        wx.redirectTo({
+          url:'/pages/index/main'
         })
         return;
       }
     }
+    this.$request('POST',callback)
+    return this
+  }
+  $request(method,cb ){
+    const _this=this
+    const token = wx.getStorageSync('token')
+    const memberId = wx.getStorageSync('memberId')
     wx.showLoading({
       mask:true,
     })
@@ -45,6 +46,7 @@ class http {
       data:{...this.data},
       header: {
         'Authorization':token,
+        'memberId':memberId,
         ...this.header
       },
       success(res){
@@ -75,7 +77,8 @@ class http {
       header: this.header,
       success(res){
         wx.hideLoading()
-        wx.setStorageSync('token',res.data.data)
+        wx.setStorageSync('token',res.data.data.token)
+        wx.setStorageSync('memberId',res.data.data.memberId)
         cb( null,res )
       },
       fail(err){

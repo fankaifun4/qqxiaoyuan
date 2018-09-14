@@ -1,10 +1,8 @@
 <style lang="scss" scoped>
-  .container{
-    /*background: #f5f5f6;*/
-  }
   .theader{
-    height:300px;
-    background:#c90;
+    width:750px;
+    margin:0 auto;
+    height:425px;
     img{
       width:100%;
       height: 100%;
@@ -16,6 +14,7 @@
     align-items: center;
     padding:0 30px;
     margin-top:10px;
+    margin-bottom:15px;
     .search-icon{
       width:32px;
       height:32px;
@@ -51,61 +50,55 @@
     }
   }
   .voting-list{
-    margin:15px;
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
+    background: #f5f5f6;
+    padding:15px;
     .flex-1{
-      width:355px;
+      flex: 1;
+      &:first-child{
+        margin-right: 15px;
+      }
       .voting-item{
+        background: #fff;
         overflow: hidden;
-        width:100%;
         box-sizing: border-box;
         margin-bottom:30px;
-        font-size: 26px;
+        font-size: 28px;
+        padding:20px;
         .avart-img{
           width: 100%;
-          overflow: hidden;
+          border:1px solid #efefef;
+          border-radius: 10px;
+        }
+        >div{
+          margin-bottom:10px;
+          padding-left: 15px;
         }
         .avatar{
-          display: flex;
-          justify-content: flex-start;
-          align-items: center;
+          font-weight: 700;
           margin-top:10px;
-          margin-bottom:10px;
-          >img{
-            width:60px;height:60px;
-            overflow: hidden;
-            margin-right:20px;
-            border-radius: 30px;
-          }
         }
         .describe{
           font-size: 26px;
         }
-        .nus{
-          .bh{
-            margin-top:10px;
-          }
-          .ps{
-            margin-top:5px;
-          }
+        .bh{
+          margin-top:10px;
+        }
+        .ps{
+          margin-top:5px;
         }
         .btn-tp{
           margin-top:10px;
           text-align: right;
-          color:#f90;
+          color:#fff;
           font-size: 32px;
-          border:1px solid #c90;
+          background:rgb(50,135,244);
+          border-radius: 8px;
           display: inline-block;
-          padding:5px 30px;
+          padding:15px 30px;
           float:right;
-          background: #fff;
-          &.disabled{
-            color:#999;
-            border:1px solid #ccc;
-            color:#999;
-          }
         }
       }
     }
@@ -114,7 +107,7 @@
 <template>
 <div class="container">
   <div class="theader">
-    <img  mode="aspectFill" src="http://i1.umei.cc/uploads/tu/201608/51/wb0cawp0ycx.jpg" alt="">
+    <img  mode="aspectFill" :src="(infoData.base&&infoData.base.placardUrl)||''" alt="">
   </div>
   <div class="search">
     <img class="search-icon" src="/static/images/search@3x.png" alt="">
@@ -122,129 +115,110 @@
   </div>
   <div class="tab">
     <div>
-      <div class="weight">参与人数</div>
-      <div class="num">{{totalMan}}</div>
+      <div class="weight">投票项目</div>
+      <div class="num">{{infoData.totalItem}}</div>
     </div>
     <div>
       <div class="weight">投票次数</div>
-      <div class="num">{{totalNum}}</div>
+      <div class="num">{{infoData.totalVoteCount}}</div>
     </div>
     <div>
       <div class="weight">累计访问</div>
-      <div class="num">{{totalVisit}}</div>
+      <div class="num">{{infoData.totalView}}</div>
     </div>
   </div>
   <div class="voting-list">
     <div class="flex-1">
-      <div class="voting-item" v-for="(item,index) in Votes" :key="key"  v-if="index%2==0">
-        <img class="avart-img" mode="widthFix" :src="item.img" alt="" @click="previmg(item.img)">
-        <div class="avatar">
-          <img  :src="item.avatar" alt="">
-          {{item.nickname}}
-        </div>
-        <div class="describe">{{item.content}}</div>
-        <div class="nus">
-          <div class="bh">编号：{{item.code}}</div>
-          <div class="ps">票数：{{item.ticks}}</div>
-        </div>
-        <div class="btn-tp" v-if="item.active"  @click="poll(item)">投票</div>
-        <div class="btn-tp disabled" v-else>已投票</div>
+      <div class="voting-item" v-for="(item,index) in infoData.item" :key="key"  v-if="index%2==0">
+        <img class="avart-img" mode="widthFix" :src="item.photoUrl" alt="" @click="previmg(item.photoUrl)">
+        <div class="bh">编号：{{item.itemNo}}</div>
+        <div class="avatar">{{item.title}} </div>
+        <div class="ps">票数：{{item.totalNumber}}</div>
+        <div class="describe">{{item.describes}}</div>
+
+        <div class="btn-tp" v-if="infoData.base.isStart"  @click="poll(item)">投票</div>
       </div>
     </div>
     <div class="flex-1">
-      <div class="voting-item" v-for="(item,index) in Votes" :key="key" v-if="index%2==1">
-        <img class="avart-img" mode="widthFix" :src="item.img" alt="" @click="previmg(item.img)">
-        <div class="avatar">
-          <img  :src="item.avatar" alt="" >
-          {{item.nickname}}
-        </div>
-        <div class="describe">{{item.content}}</div>
-        <div class="nus">
-          <div class="bh">编号：{{item.code}}</div>
-          <div class="ps">票数：{{item.ticks}}</div>
-        </div>
-        <div class="btn-tp" v-if="item.active" @click="poll(item)">投票</div>
-        <div class="btn-tp disabled" v-else>已投票</div>
+      <div class="voting-item" v-for="(item,index) in infoData.item" :key="key" v-if="index%2==1">
+        <img class="avart-img" mode="widthFix" :src="item.photoUrl" alt="" @click="previmg(item.photoUrl)">
+        <div class="bh">编号：{{item.itemNo}}</div>
+        <div class="avatar">{{item.title}} </div>
+        <div class="ps">票数：{{item.totalNumber}}</div>
+        <div class="describe">{{item.describes}}</div>
+        <div class="btn-tp"   v-if="infoData.base.isStart"  @click="poll(item)">投票</div>
       </div>
     </div>
   </div>
 </div>
 </template>
 <script>
-export default {
-  data(){
-   return{
-     totalMan:2000,
-     totalNum:1500,
-     totalVisit:2000,
-     Votes: [
-       {
-         img:"http://i1.umei.cc/uploads/tu/201608/51/wb0cawp0ycx.jpg",
-         nickname:"小羊毛",
-         avatar:"http://i1.umei.cc/uploads/tu/201608/51/wb0cawp0ycx.jpg",
-         content:"犹抱琵琶半遮面",
-         code:12203,
-         ticks:0,
-         active:true
-       },
-       {
-         img:"http://i1.umei.cc/uploads/tu/201711/9999/rn86291e0adc.jpg",
-         nickname:"小羊毛",
-         avatar:"http://i1.umei.cc/uploads/tu/201711/9999/rn86291e0adc.jpg",
-         content:"清纯可嘉",
-         code:12204,
-         ticks:0,
-         active:true
-       },
-       {
-         img:"http://i1.umei.cc/uploads/tu/201711/9999/rn96a36788e6.jpg",
-         nickname:"小奶牛",
-         avatar:"http://i1.umei.cc/uploads/tu/201711/9999/rn96a36788e6.jpg",
-         content:"滚滚红尘",
-         code:12205,
-         ticks:0,
-         active:false
-       },
-       {
-         img:"http://i1.umei.cc/uploads/tu/201710/10055/3b088aa3d6.jpg",
-         nickname:"小白兔",
-         avatar:"http://i1.umei.cc/uploads/tu/201710/10055/3b088aa3d6.jpg",
-         content:"美丽俏佳人",
-         code:12206,
-         ticks:0,
-         active:false
-       },
-       {
-         img:"http://i1.umei.cc/uploads/tu/201710/10018/3e05788fb3.jpg",
-         nickname:"小龟龟",
-         avatar:"http://i1.umei.cc/uploads/tu/201710/10018/3e05788fb3.jpg",
-         content:"阳光二尺，赠余处",
-         code:12207,
-         ticks:0,
-         active:false
-       }
-     ]
-   }
-  },
-  created(){
-
-  },
-  methods:{
-    searchVoter(e){
-      e.detail.value
+  import {activityDetail,activityVote} from "@/server/index"
+  export default {
+    data(){
+     return{
+       Votes: [],
+       infoData:{},
+       userInfo:{},
+       id:'',
+       isEnd:false
+     }
     },
-    poll(model){
-      if( model.active ){
-        model.ps+=1
-        model.active=false
+    mounted(){
+    },
+    onLoad(option){
+      this.id=option.id
+      this.userInfo= wx.getStorageSync('userInfo')
+      this.getData()
+    },
+    methods:{
+      getData(){
+        activityDetail(this.id,(err,res)=>{
+          if(err){
+            wx.showToast({
+              icon:'none',
+              title:"加载数据失败"
+            })
+            return
+          }
+          if(res && res.data && res.data.code==200){
+            this.infoData = res.data.data
+            this.isStart = this.infoData.base.isStart===0?false:true
+          }
+        })
+      },
+      searchVoter(e){
+        e.detail.value
+      },
+      poll(model){
+        activityVote(model.id,(err,res)=>{
+          if(err){
+            wx.showModal({
+              content:"投票失败",
+              showCancel:false
+            })
+            return
+          }
+          if( res.data.code==200 ){
+            wx.showToast({
+              icon:'none',
+              title:res.data.msg
+            })
+            model.totalNumber+=1
+          }else{
+            wx.showModal({
+              content:res.data.msg,
+              showCancel:false
+            })
+          }
+        })
+      },
+      previmg(url){
+        wx.previewImage({
+          current:url,
+          urls:[url]
+        })
       }
-    },
-    previmg(url){
-      wx.previewImage({
-        current:url,
-        urls:[url]
-      })
     }
   }
-}
 </script>

@@ -6,6 +6,6 @@ app.$mount()
 export default {
   config:{
     navigationBarTitleText:'投票活动详情',
-    enablePullDownRefresh:true
+    enablePullDownRefresh:false
   }
 }
