@@ -47,6 +47,7 @@
   .tab-name{
     margin-top:20px;
     background: #fff;
+    border-bottom: 1px solid #e5e5e5;
     .more{
       text-align: right;
       color:rgb(50,135,244);
@@ -77,7 +78,6 @@
     }
   }
   .table-body{
-    border-top:1px solid #ccc;
     .table-select{
       background: #fefefe;
       padding:40px 0;
@@ -161,25 +161,6 @@
     background:#efefef;
     height:10px;
   }
-  .publish-wrap{
-    position: fixed;
-    width:120px;
-    height:120px;
-    bottom:50px;
-    right: 10px;
-    background: #1296db;
-    border-radius: 100%;
-    text-align: center;
-    color: #fff;
-    font-size: 24px;
-    z-index: 1000;
-    img{
-      display: block;
-      width:60px;
-      height: 60px;
-      margin:0 auto;
-    }
-  }
 </style>
 <template>
   <div class="container">
@@ -203,7 +184,10 @@
         <div class="title">最新活动</div>
         <div class="more" @click="goMore">查看更多...</div>
       </div>
-
+    <no-data :nodata="noData"
+             title="暂时还没有投票活动哦"
+             tips="去创建并邀请好友丰富社区吧"
+             btn="现在就去创建" @clickBtn="goPublish"></no-data>
       <div class="table-body">
         <div class="table-select">
           <div class="list" v-for="item in activityList" :key="key"  @click="enrollMain(item)">
@@ -211,19 +195,17 @@
             <div class="cont-right">
               <div class="fs-b">{{item.theme}}</div>
               <div>人气 {{item.viewTotal}} </div>
-              <div v-if="!item.isStart==0">开始时间：{{item.startTime}}</div>
-              <div v-if="!item.isStart==0">结束时间：{{item.endTime}}</div>
-              <div v-if="item.isStart==0" class="baomover disabled" >已结束</div>
-              <div v-else class="baom">火热进行中</div>
+              <div v-if="item.isStart!=3">开始结间：{{item.startTime}}</div>
+              <div v-if="item.isStart!=3">结束时间：{{item.endTime}}</div>
+              <div v-if="item.isStart==1" class="baom" >火热进行中</div>
+              <div v-if="item.isStart==2" class="baomover disabled" >活动暂停</div>
+              <div v-if="item.isStart==3" class="baomover disabled" >活动已结束</div>
             </div>
           </div>
           <loading v-if="isLoading"></loading>
         </div>
       </div>
-      <div class="publish-wrap" @tap="publishAct">
-          <img src="/static/images/publish.png" alt="">
-          <view>去发布</view>
-      </div>
+      <air-props text="创建活动" @tapEnd="publishAct"></air-props>
       <div class="login-wrap" v-if="noLogin">
         <div class="login-body">
           <img src="/static/images/qiyu_logo.jpg" alt="">
@@ -237,6 +219,8 @@ import {getActivity } from  '@/server/index'
 import loginCtrl  from '@/utils/login'
 import loading from '@/components/loading'
 import moment from 'moment'
+import noData from '@/components/nodata'
+import airProps from '@/components/airgroup'
 export default {
   data () {
     return {
@@ -263,15 +247,19 @@ export default {
       ],
       activityList:[],
       page:1,
-      listOver:false
+      listOver:false,
+      longStart:null,
+      noData:false
     }
   },
   components:{
-    loading
+    loading,
+    noData,
+    airProps
   },
-  mounted () {
-    // 调用应用实例的方法获取全局数据
+  onShow(){
     this.checkLogin()
+    // 调用应用实例的方法获取全局数据
     this.listOver=false
     this.activityList=[]
     this.page=1
@@ -283,7 +271,18 @@ export default {
     this.page=1
     this.getUpload()
   },
+  onShareAppMessage(res){
+    return {
+      title:"小数点投票，分享每一份荣誉和快乐",
+      url:"/pages/index/main"
+    }
+  },
   methods: {
+    goPublish(){
+      wx.navigateTo({
+        url:"/pages/activity/publishVoting/main"
+      })
+    },
     getUpload(){
       this.isLoading = true
       getActivity({
@@ -331,8 +330,14 @@ export default {
           type:1
         }
       },(er,res)=>{
+        this.isLoading=false
         if(er) return
         if( res.data && res.data.list  ){
+          if( this.page==1 && res.data.list.length<1 ){
+            this.noData=true
+            return
+          }
+          this.noData=false
           res.data.list.forEach(item=>{
             let startTime = moment(item['startTime']).format('MM月DD hh:mm')
             let endTime = moment(item['endTime']).format('MM月DD hh:mm')
@@ -340,7 +345,7 @@ export default {
             item['endTime'] = endTime
           })
           if(  res.data.list.length < 5){
-            this.isLoading=false
+
             this.activityList = this.activityList.concat( res.data.list )
             this.listOver=true
             return
@@ -358,6 +363,7 @@ export default {
         }else{
             setTimeout(()=>{
               this.isLoading=false
+              this.noData=true
             },500)
         }
 

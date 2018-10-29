@@ -67,6 +67,10 @@
 <template>
     <div class="">
       <div class="nav-back" @click="goHome" v-if="ispublish">返回首页</div>
+      <no-data :nodata="noData"
+              title="您还没有创建过活动哦"
+              tips="马上去创建并邀请好友参加吧"
+              btn="马上去创建" @clickBtn="goPublish"></no-data>
       <div class="voting-list">
         <div class="flex-1">
           <div class="voting-item" v-for="(item,index) in playerXd" :key="key"  v-if="index%2==0">
@@ -101,12 +105,14 @@
     </div>
 </template>
 <script>
-  import { getActivity } from  '@/server/index'
+  import { getMyActivity } from  '@/server/index'
   import loading from '@/components/loading'
+  import noData from '@/components/nodata'
   import moment from 'moment'
   export default {
     components:{
-      loading
+      loading,
+      noData
     },
     data(){
       return{
@@ -116,7 +122,8 @@
         page:1,
         listOver:false,
         isLoading:false,
-        ispublish:false
+        ispublish:false,
+        noData:false
       }
     },
     onLoad(option){
@@ -143,28 +150,28 @@
         }
         this.isLoading=true
         const _this=this
-        getActivity({
+        let memberId = wx.getStorageSync('memberId')
+        getMyActivity({
           currentPage:this.page,
           pageSize:this.pageSize,
           search:{
-            type:1
+            memberId:memberId
           }
         },(err,res)=>{
+          _this.isLoading=false
           if(err) return
           if( res.data && res.data.list  ){
+            if( this.page==1 && res.data.list.length<1 ){
+              this.noData=true
+              return
+            }
+            this.noData=false
             res.data.list.forEach(item=>{
               item['startTime'] = moment(item['startTime']).format('MM月DD hh:mm')
               item['endTime'] = moment(item['endTime']).format('MM月DD hh:mm')
             })
-            if(this.page===1 && res.data.list.length>3){
-              _this.TOP3 = [
-                res.data.list[0],
-                res.data.list[1],
-                res.data.list[2]
-              ]
-            }
             if(  res.data.list.length < _this.pageSize){
-              _this.isLoading=false
+
               _this.playerXd = this.playerXd.concat( res.data.list )
               _this.listOver=true
               return
@@ -182,6 +189,7 @@
           }else{
             setTimeout(()=>{
               _this.isLoading=false
+              this.noData=true
             },500)
           }
         })
@@ -189,6 +197,11 @@
       mannageAct(model){
         wx.navigateTo({
           url:"/pages/updateVote/update/main?id="+model.id
+        })
+      },
+      goPublish(){
+        wx.navigateTo({
+          url:"/pages/activity/publishVoting/main"
         })
       }
     },

@@ -71,7 +71,6 @@
       margin-top:15px;
       box-sizing: border-box;
       padding: 20px;
-      border-radius: 10px;
     }
     .next{
       width:100%;
@@ -127,11 +126,10 @@
         }
       }
       .detail{
-        border:1px solid #ccc;
+        border:1px solid #c9c9c9;
         min-height:80px;
         padding:15px;
         box-sizing: border-box;
-        border-radius: 10px;
         color:#999;
       }
       .delete{
@@ -206,68 +204,6 @@
   .red{
     color:#c90915;
   }
-  .copper-shape-list{
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 99999;
-    overflow: hidden;
-    .cropper-block{
-      position: absolute;
-      top:0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      z-index: 99;
-    }
-    .cropper-wrapper{
-
-    }
-    .cropper-buttons{
-      display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
-      justify-content: center;
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 100px;
-      line-height: 50px;
-      z-index: 99999;
-    }
-
-    .cropper-buttons .upload, .cropper-buttons .getCropperImage{
-      width: 50%;
-      text-align: center;
-    }
-
-    .cropper{
-      position: absolute;
-      top: 0;
-      left: 0;
-    }
-
-    .cropper-buttons{
-      background-color: rgba(0, 0, 0, 0.95);
-      color: #04b00f;
-    }
-    .close-cropper{
-      position: absolute;
-      right: 0;
-      top: 10px;
-      width:100px;
-      height:100px;
-      color:#04b00f;
-      z-index: 1000;
-      background: url("https://lg-5awlljfq-1257134625.cos.ap-shanghai.myqcloud.com/close.png") no-repeat center;
-      background-size: 60px 60px;
-      z-index: 999;
-    }
-  }
 </style>
 <template>
 <div class="container">
@@ -316,8 +252,8 @@
             </picker>
           </div>
           <div class="form-group">
-            <label for="">活动详情</label>
-            <div @click="addBaseDiscribe">{{base.introduction||'请输入详情描述'}}</div>
+            <label>活动详情</label>
+            <div @click="addBaseDiscribe" :class="{black:base.introduction.length>0}">{{base.introduction||'请输入详情描述'}}</div>
           </div>
           <div class="form-group">
             <button class="next" @click="publishActNext">下一步</button>
@@ -335,7 +271,7 @@
             <div class="itemNo">编号：{{item.itemNo}}</div>
             <div class="title">标题：<input type="text" v-model="item.title" placeholder="请填写标题"></div>
             <div class="title">初始票数：<input type="text" v-model="item.totalNumber" placeholder="初始票数"></div>
-            <div class="detail" @click="addListText(item)">{{item.describes==''?'填写介绍会增加朋友的投票热情哦':item.describes}}</div>
+            <div class="detail" @click="addListText(item)" :class="{black:item.describes.length>0}">{{item.describes==''?'填写介绍会增加朋友的投票热情哦':item.describes}}</div>
             <div class="delete" @click="deleteSetting(index)"></div>
             <div class="uper" @click="uperList(item,index)" v-if="index>0"></div>
             <div class="down" @click="downList(item,index)" v-if="index<list.length-1"></div>
@@ -397,41 +333,25 @@
     @change="changeText"
     @cancel="cancelText">
   </detail-text>
-  <div class="copper-shape-list" v-show="wecropper">
-    <div class="close-cropper" @click="closeCropper"></div>
-    <mpvue-cropper
-      ref="cropper"
-      :option="cropperOpt"
-      @ready="cropperReady"
-      @beforeDraw="cropperBeforeDraw"
-      @beforeImageLoad="cropperBeforeImageLoad"
-      @beforeLoad="cropperLoad"
-    ></mpvue-cropper>
-    <div class="cropper-buttons">
-      <div
-        class="upload"
-        @tap="uploadTap">
-        上传图片
-      </div>
-      <div
-        class="getCropperImage"
-        @tap="getCropperImage">
-        完成
-      </div>
-    </div>
-  </div>
+  <mpvue-cropper
+    :show="openCropper"
+    ref="cropper"
+    :option="cropperOpt"
+    @closeCropper="closeCropper"
+    @getCropperImage="getCropperImage"
+  ></mpvue-cropper>
 </div>
 </template>
 <script>
   import moment from 'moment'
-  import detailText from '../../../components/detailText'
   import {activityCreate} from '../../../server/index'
   import uploadFile from '../../../utils/upload'
-  import MpvueCropper from 'mpvue-cropper'
+  import detailText from '../../../components/detailText'
+  import MpvueCropper from '../../../components/mpvue-cropper'
   let wecropper
   const device = wx.getSystemInfoSync()
   const width = device.windowWidth
-  const height = device.windowHeight
+  const height = device.windowHeight-100
   export default {
     components:{
       detailText,
@@ -441,8 +361,6 @@
       return {
         cropperOpt: {
           id: 'cropper',
-          width,
-          height,
           scale: 2.5,
           zoom: 8,
           cut: {
@@ -452,7 +370,7 @@
             height: 300
           }
         },
-        wecropper:false,
+        openCropper:false,
         settingSelect:1,
         //开始时间
         startDate: moment().format('YYYY-MM-DD'),
@@ -529,31 +447,95 @@
         listsImgID:null
       }
     },
+    onLoad(){
+      this.openCropper=false
+    },
     mounted(){
       wecropper = this.$refs.cropper
       this.uploadImage = uploadFile()
+      this.initData()
+
       let userInfo = wx.getStorageSync('userInfo')
       this.userInfo = userInfo
     },
     methods:{
+      initData(){
+        this.settingSelect=1
+        this.base= {
+          //主题
+          theme:"",
+          //类型，投票传1
+          type:1,
+          //海报url
+          placardUrl:"",
+          //详情描述
+          introduction:"",
+          //开始时间
+          startTime:"",
+          //结束时间
+          endTime:"",
+          //联系方式
+          contactInformation:"",
+        }
+        this.list=[
+          {
+            //图片地址
+            photoUrl:"",
+            //编号
+            itemNo:101,
+            //标题
+            title:"",
+            //描述
+            describes:"",
+            //初始票书
+            totalNumber:0
+          },
+          {
+            //图片地址
+            photoUrl:"",
+            //编号
+            itemNo:102,
+            //标题
+            title:"",
+            //描述
+            describes:"",
+            //初始票书
+            totalNumber:0
+          }
+        ]
+        this.info={
+          //用户投票次数
+          limitTotal:'',
+          //每天允许投几次
+          limitDay:3,
+          //是否能重复投票
+          isRepeat:1,
+          //是否显示票数
+          displayBallot:1,
+          //是否显示结果
+          displayResult:1,
+          //是否能报名
+          userCreate:0
+        }
+      },
       Ept(val){
         return val.replace(/^\s+|\s+$/ig,'')
       },
       setListImgs(model){
-        if(this.wecropper)return
+        if(this.openCropper)return
         this.listsImgID = model.itemNo
         wecropper.option.cut.width = 300
         wecropper.option.cut.height = 360
         wecropper.init()
-        this.wecropper=true
+        this.openCropper=true
       },
       addImagePrev(){
-        if(this.wecropper) return
+        if(this.openCropper) return
         this.listsImgID=null
         wecropper.option.cut.width = 300
         wecropper.option.cut.height = 168
         wecropper.init()
-        this.wecropper=true
+        this.openCropper=true
       },
       selectSetting(index){
         this.settingSelect=index
@@ -786,7 +768,7 @@
               showCancel:false,
               success(){
                 wx.reLaunch({
-                  url:"/pages/mainAct/main?publish=true"
+                  url:"/pages/index/main"
                 })
               }
             })
@@ -810,50 +792,28 @@
           mask:true
         })
       },
-      cropperReady (...args) {
-        console.log('cropper ready!')
-      },
-      cropperBeforeImageLoad (...args) {
-        console.log('before image load')
-      },
-      cropperLoad (...args) {
-        console.log('image loaded')
-      },
-      cropperBeforeDraw (...args) {
-        // Todo: 绘制水印等等
-      },
-      uploadTap () {
-        wx.chooseImage({
-          count: 1, // 默认9
-          sizeType: ['original', 'compressed'], // 可以指定是原图还是压缩图，默认二者都有
-          sourceType: ['album', 'camera'], // 可以指定来源是相册还是相机，默认二者都有
-          success: (res) => {
-            const photoUrl = res.tempFilePaths[0]
-            //  获取裁剪图片资源后，给data添加src属性及其值
-            wecropper.pushOrigin(photoUrl)
-          }
-        })
-      },
-      getCropperImage () {
-        wecropper.getCropperImage()
-          .then((photoUrl) => {
-            if(this.listsImgID){
-              this.list.forEach(item=>{
-                if(item.itemNo===parseInt(this.listsImgID)){
-                  item.photoUrl = photoUrl||''
-                }
-              })
-            }else{
-              this.base.placardUrl = photoUrl||''
+      getCropperImage (photoUrl) {
+        if(!photoUrl){
+          wx.showToast({
+            icon:'none',
+            title:"图片获取失败"
+          })
+          this.openCropper = false
+          return
+        }
+        if(this.listsImgID){
+          this.list.forEach(item=>{
+            if(item.itemNo===parseInt(this.listsImgID)){
+              item.photoUrl = photoUrl||''
             }
-            this.wecropper = false
           })
-          .catch(e => {
-            console.error('获取图片失败')
-          })
+        }else{
+          this.base.placardUrl = photoUrl||''
+        }
+        this.openCropper = false
       },
       closeCropper(){
-        this.wecropper = false
+        this.openCropper = false
       }
     }
   }

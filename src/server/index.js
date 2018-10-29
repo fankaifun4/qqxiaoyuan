@@ -9,6 +9,12 @@ export const getSchool = ({ latitude, longitude,searchName},cb) => $http('/api/s
 //获取投票活动列表
 export const getActivity  = ({currentPage=1,pageSize=20,search={ type:1 } },cb)=>$http('/api/vote/activity_page',{currentPage,pageSize,search}).$post(cb)
 
+//获取我的创建活动列表
+export const getMyActivity  = ({currentPage=1,pageSize=20,search={ memberId:1 } },cb)=>$http('/api/vote/activity_page',{currentPage,pageSize,search}).$post(cb)
+
+//获取我参加的活动列表
+export const  activityPageJoin = ({currentPage=1,pageSize=20,search={ memberId:1 } },cb)=>$http('/api/vote/activity_page_join',{currentPage,pageSize,search}).$post(cb)
+
 //获取图片上传许可
 export const cosSign = ({method,path},cb)=>$http('/api/school/cos_sign',{method,path}).$post(cb,true)
 
@@ -29,3 +35,6 @@ export const activityStart = (id,cb)=>$http('/api/vote/activity_start',{id}).$po
 
 //投票活动 暂停
 export const activityStop = (id,cb)=>$http('/api/vote/activity_stop',{id}).$post(cb,true)
+
+//报名投票活动
+export const activityJoin = (formdata,cb)=>$http('/api/vote/activity_join',{...formdata}).$post(cb,true)

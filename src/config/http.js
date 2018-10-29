@@ -24,7 +24,7 @@ class http {
     const memberId = wx.getStorageSync('memberId')
     if( isToken ){
       if( !token || !memberId ){
-        wx.redirectTo({
+        wx.switchTab({
           url:'/pages/index/main'
         })
         return;
@@ -61,6 +61,18 @@ class http {
         })
         wx.hideLoading()
         cb(err)
+      },
+      complete(res){
+        if(res.statusCode==500){
+          wx.showToast({
+            icon:"none",
+            mask:true,
+            title:"服务器离家出走啦"
+          })
+          wx.switchTab({
+            url:'/pages/index/main'
+          })
+        }
       }
     })
     return this

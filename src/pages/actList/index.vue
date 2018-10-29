@@ -48,7 +48,11 @@
 <template>
   <div class="ct_w">
     <div class="ct-b">
-      <div class="ct-list">
+      <no-data v-if="noData" :nodata="noData"
+                           title="您还没有参加过活动哦"
+                           tips="马上去并邀请好友给对方投票吧"
+                           btn="现在就去" @clickBtn="golists"></no-data>
+      <div v-else class="ct-list">
         <div class="voting-list">
           <div class="flex-1">
             <div class="voting-item" v-for="(item,index) in playerXd" :key="key"  v-if="index%2==0" @click="goDetailPath(item)">
@@ -79,30 +83,38 @@
   </div>
 </template>
 <script>
-  import { getActivity } from  '@/server/index'
+  import { activityPageJoin } from  '@/server/index'
   import loading from '@/components/loading'
   import moment from 'moment'
+  import noData from '@/components/nodata'
   export default {
     components:{
-      loading
+      loading,
+      noData
     },
     data(){
       return{
         banner:"https://nie.res.netease.com/r/pic/20180620/1f73d859-6f6e-4d46-a2c5-e7716f54df31.jpg",
-        TOP3:[{}],
+        TOP3:[],
         playerXd:[],
         hotName:"我的参加",
         playListName:"投票列表",
         pageSize:10,
         page:1,
         listOver:false,
-        isLoading:false
+        isLoading:false,
+        noData:false
       }
     },
     mounted(){
       this.getData()
     },
     methods:{
+      golists(){
+        wx.navigateTo({
+          url:"/pages/voting/lists/main"
+        })
+      },
       getData(){
         if(this.listOver){
           wx.showToast({
@@ -113,15 +125,22 @@
         }
         this.isLoading=true
         const _this=this
-        getActivity({
+        let memberId =  wx.getStorageSync('memberId')
+        activityPageJoin({
           currentPage:this.page,
           pageSize:this.pageSize,
           search:{
-            type:1
+            memberId
           }
         },(err,res)=>{
+          _this.isLoading=false
           if(err) return
           if( res.data && res.data.list  ){
+            if(this.page==1 && res.data.list.length<1){
+              this.noData=true
+              return
+            }
+            this.noData=false
             res.data.list.forEach(item=>{
               item['startTime'] = moment(item['startTime']).format('MM月DD hh:mm')
               item['endTime'] = moment(item['endTime']).format('MM月DD hh:mm')
@@ -134,7 +153,7 @@
               ]
             }
             if(  res.data.list.length < _this.pageSize){
-              _this.isLoading=false
+
               _this.playerXd = this.playerXd.concat( res.data.list )
               _this.listOver=true
               return
@@ -151,6 +170,7 @@
             }
           }else{
             setTimeout(()=>{
+              this.noData=true
               _this.isLoading=false
             },500)
           }

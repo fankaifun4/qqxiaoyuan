@@ -6,11 +6,16 @@ export default {
     logs.unshift(Date.now())
     wx.setStorageSync('logs', logs)
     console.log('app created and cache logs by setStorageSync')
-  }
+  },
+
 }
 </script>
 
 <style lang="scss" >
   /* this rule will be remove */
   @import 'static/style/comm.scss';
+
+  .black{
+    color:#333 !important;
+  }
 </style>

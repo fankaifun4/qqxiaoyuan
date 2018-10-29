@@ -4,7 +4,7 @@
     width:100%;
     height: 100%;
     overflow: hidden;
-    background: #ffe14f;
+    background: #fff;
     >img{
       width:100%;
       height: 100%;
@@ -126,6 +126,10 @@
 </style>
 <template>
   <div class="ct_w">
+    <no-data :nodata="noData"
+             title="暂时还没有投票活动哦"
+             tips="去创建并邀请好友丰富社区吧"
+             btn="现在就去创建" @clickBtn="goPublish"></no-data>
     <div class="ct-b">
       <div class="ct-list">
         <div class="ct-list-header">
@@ -154,48 +158,58 @@
             <div class="cont-right">
               <div class="theme">{{item.theme}}</div>
               <div>人气 {{item.viewTotal}} </div>
-              <div v-if="item.isStart==1">开始结间：{{item.startTime}}</div>
-              <div v-if="item.isStart==1">结束时间：{{item.endTime}}</div>
-              <div v-if="item.isStart==0" class="baomover disabled" >已结束</div>
-              <div v-else class="baom">火热进行中</div>
+              <div v-if="item.isStart!=3">开始结间：{{item.startTime}}</div>
+              <div v-if="item.isStart!=3">结束时间：{{item.endTime}}</div>
+              <div v-if="item.isStart==1" class="baom" >火热进行中</div>
+              <div v-if="item.isStart==2" class="baomover disabled" >活动暂停</div>
+              <div v-if="item.isStart==3" class="baomover disabled" >活动已结束</div>
             </div>
           </div>
         </div>
         <loading v-if="isLoading"></loading>
       </div>
     </div>
-    <div class="publish-wrap" @tap="publishAct">
-      <img src="/static/images/publish.png" alt="">
-      <view>去发布</view>
-    </div>
+    <air-props text="创建活动" @tapEnd="goPublish"></air-props>
   </div>
 </template>
 <script>
   import { getActivity } from  '@/server/index'
   import loading from '@/components/loading'
   import moment from 'moment'
+  import noData from '@/components/nodata'
+  import airProps from '@/components/airgroup'
   export default {
     components:{
-      loading
+      loading,
+      noData,
+      airProps
     },
     data(){
       return{
         banner:"https://nie.res.netease.com/r/pic/20180620/1f73d859-6f6e-4d46-a2c5-e7716f54df31.jpg",
         TOP3:[{}],
         playerXd:[],
-        hotName:"TOP",
+        hotName:"热门",
         playListName:"投票列表",
         pageSize:10,
         page:1,
         listOver:false,
-        isLoading:false
+        isLoading:false,
+        longStart:null,
+        noData:false
       }
     },
 
     mounted(){
       this.getData()
+
     },
     methods:{
+      goPublish(){
+        wx.navigateTo({
+          url:"/pages/activity/publishVoting/main"
+        })
+      },
       publishAct(){
         wx.navigateTo({
           url:"/pages/activity/publishVoting/main"
@@ -218,15 +232,21 @@
             type:1
           }
         },(err,res)=>{
+          _this.isLoading=false
           if(err) return
           if( res.data && res.data.list  ){
+            if( _this.page==1 && res.data.list.length<1 ){
+              _this.noData=true
+              return
+            }
+            _this.noData=false
             res.data.list.forEach(item=>{
               let startTime = moment(item['startTime']).format('MM月DD hh:mm')
               let endTime = moment(item['endTime']).format('MM月DD hh:mm')
               item['startTime'] = startTime
               item['endTime'] = endTime
             })
-            if(this.page===1  ){
+            if(this.page===1 ){
               if( res.data.list.length>=3 ){
                 _this.TOP3 = [
                   res.data.list[0],
@@ -248,7 +268,6 @@
               }
             }
             if(  res.data.list.length < _this.pageSize){
-              _this.isLoading=false
               _this.playerXd = this.playerXd.concat( res.data.list )
               _this.listOver=true
               return
@@ -265,6 +284,7 @@
             }
           }else{
             setTimeout(()=>{
+              _this.noData=true
               _this.isLoading=false
             },500)
           }

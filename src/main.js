@@ -5,6 +5,7 @@ Vue.config.productionTip = false
 App.mpType = 'app'
 
 const app = new Vue(App)
+
 app.$mount()
 
 export default {
@@ -21,9 +22,10 @@ export default {
       'pages/activity/voting/lists/main',
       'pages/activity/voting/detail/main',
       'pages/updateVote/update/main'
+
     ],
     window: {
-      navigationBarBackgroundColor: "#000",
+      navigationBarBackgroundColor: "#5a5a5a",
       backgroundTextStyle: 'dark',
       navigationBarTextStyle: '#fff',
       onReachBottomDistance:"50px"

@@ -1,31 +1,49 @@
 <style scoped lang="scss">
 .main-wrap{
   background: #fff;
-  position: absolute;
-  left: 0;
-  top: 0;
-  right: 0;
-  bottom: 0;
 }
 .top-banner{
   height: 420px;
   color:#fff;
-  background:#0186ef ;
+  position: relative;
+  box-sizing: border-box;
+  background:  linear-gradient(to bottom, #1c1c1c 10%, #616161 100%);
+  &:before{
+    position: absolute;
+    content:"";
+    left:20px;
+    top:40px;
+    bottom:0px;
+    right: 20px;
+    background: linear-gradient(to top, #1C23A5, #34BDF3);
+    z-index: 1;
+    border-radius: 20px 20px 0 0px;
+  }
   .userinfo{
+    position: absolute;
+    z-index: 5;
     display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: column;
-    height: 100%;
+    width:200px;
+    height: 300px;
+    background: #313131;
+    border-radius: 20px;
+    right: 40px;
+    top:60px;
     .avatar-url{
       width:140px;
       height:140px;
       overflow: hidden;
-      border-radius: 100%;
+      border-radius: 10%;
     }
     .nick-name{
-      margin-top:15px;
+      margin-top:35px;
       font-size:28px;
+      width: 100%;
+      overflow: hidden;
+      text-align: center;
     }
   }
 }
@@ -49,11 +67,11 @@
   </div>
   <div class="my-cont">
     <ul>
-      <li @click="myActivity">我的活动</li>
+      <li @click="myActivity">我的创建</li>
       <li @click="participateAct">我的参加</li>
-      <li @click="publishAct">发布</li>
-      <li>@关于小数点</li>
-      <li>版本号1.0.0</li>
+      <li @click="publishAct">创建活动</li>
+      <li>关于小数点</li>
+      <li @click="clearStorage">退出登录</li>
     </ul>
   </div>
 </div>
@@ -96,6 +114,19 @@
       myActivity(){
         wx.navigateTo({
           url:"/pages/mainAct/main"
+        })
+      },
+      clearStorage(){
+        wx.showModal({
+          content:"真的要退出登录吗",
+          success:res=>{
+            if(res.confirm){
+              wx.clearStorage()
+              wx.switchTab({
+                url:'/pages/index/main'
+              })
+            }
+          }
         })
       }
     }
