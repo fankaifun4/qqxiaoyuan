@@ -444,7 +444,8 @@ export default {
     }
   },
   onReachBottom(){
-    if(this.isLoading) return
+    if(this.data.isLoading) return
+    if(!this.data.userInfo) return
     this.getData()
   }
 }

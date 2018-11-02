@@ -26,7 +26,7 @@ const loginController = {
           'wx-encryptedData':encryptedData,
           'wx-signature':signature,
         }
-        login({code},cb)
+        login(code,cb)
       },
       fail(err){
         return err

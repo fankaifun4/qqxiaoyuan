@@ -1,7 +1,7 @@
 import $http from '../config/http'
 
 //登录
-export const login  = ({code},cb) => $http('/api/school/weixin_login',{code}).$login(cb)
+export const login  = (code,cb) => $http('/api/school/weixin_login',{code}).$login(cb)
 
 //获取学习位置
 export const getSchool = ({ latitude, longitude,searchName},cb) => $http('/api/school/location',{latitude,longitude,searchName}).$post(cb,true)
