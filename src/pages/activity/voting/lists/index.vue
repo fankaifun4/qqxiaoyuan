@@ -87,13 +87,14 @@
           }
           .theme{
             font-weight: 700;
+            color:#FF8442;
           }
           .baomover{
             color:#ccc;
             font-size: 30px;
           }
           .baom{
-            color:#090;
+            color:#FF8442;
             font-size: 30px;
           }
           .titles{

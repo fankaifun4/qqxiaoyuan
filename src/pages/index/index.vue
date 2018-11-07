@@ -103,12 +103,15 @@
           >div{
             margin-bottom:15px;
           }
+          .theme{
+            color:#FF8442;
+          }
           .baomover{
             color:#ccc;
             font-size: 30px;
           }
           .baom{
-            color:#090;
+            color:#FF8442;
             font-size: 30px;
           }
           .titles{
@@ -193,7 +196,7 @@
           <div class="list" v-for="item in activityList" :key="key"  @click="enrollMain(item)">
             <img class="icon-left" :src="item.placardUrl" alt="">
             <div class="cont-right">
-              <div class="fs-b">{{item.theme}}</div>
+              <div class="fs-b ">主题 <text class="theme">{{item.theme}}</text></div>
               <div>人气 {{item.viewTotal}} </div>
               <div v-if="item.isStart!=3">开始结间：{{item.startTime}}</div>
               <div v-if="item.isStart!=3">结束时间：{{item.endTime}}</div>
@@ -444,8 +447,8 @@ export default {
     }
   },
   onReachBottom(){
-    if(this.data.isLoading) return
-    if(!this.data.userInfo) return
+    if(this.isLoading) return
+    if(!this.userInfo) return
     this.getData()
   }
 }

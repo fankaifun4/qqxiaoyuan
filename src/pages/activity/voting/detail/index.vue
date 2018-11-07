@@ -98,7 +98,6 @@
           border-radius: 8px;
           display: inline-block;
           padding:15px 30px;
-          float:right;
         }
       }
     }
@@ -198,6 +197,7 @@
     onShareAppMessage(res){
       let id = res.target.id
       let data = this.infoData.item
+      let theme = this.infoData.base.theme
       let user = {}
       for(let i=0;i<data.length;i++){
         if( data[i].itemNo == id ){
@@ -207,14 +207,14 @@
       }
       if(res.from==='button'){
         return {
-          title:"为我投上宝贵的一票吧,我的编号是："+ id,
+          title:"我参与了 "+theme+" 的投票，我的编号是："+ id+" 请为我投一票吧.",
           imageUrl:user.photoUrl,
-          path:'/pages/activity/voting/detail/main?id='+this.id
+          path:'pages/index/main'
         }
       }else{
         return {
           title:"为我投上宝贵的一票吧",
-          path:'/pages/activity/voting/detail/main?id='+this.id
+          path:'pages/index/main'
         }
       }
 

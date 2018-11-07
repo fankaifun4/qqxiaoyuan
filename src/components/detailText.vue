@@ -45,7 +45,7 @@
   <div class="detail-text" v-if="isopen">
     <div class="shap" @click="cancel"></div>
     <div class="text-wrap">
-      <textarea maxlength="200" v-model="text" auto-focus  auto-height placeholder="请输入100字以内的简要说明"></textarea>
+      <textarea maxlength="200" v-model="text" auto-focus fixed="true"  auto-height placeholder="请输入100字以内的简要说明"></textarea>
       <button class="btn" @click="inputText"> 完成 </button>
     </div>
 
